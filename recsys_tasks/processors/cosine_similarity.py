@@ -67,8 +67,7 @@ class CosineSimilarityProcessor:
         indices_pairs = (
             (core_index, slave_index)
             for core_index in range(members_count)
-            for slave_index in range(members_count)
-            if core_index != slave_index
+            for slave_index in range(core_index + 1, members_count)
         )
         for core_index, slave_index in indices_pairs:
             core_line, slave_line = self.source_data[core_index], self.source_data[slave_index]
