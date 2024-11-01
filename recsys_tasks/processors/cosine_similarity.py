@@ -1,6 +1,6 @@
 """Модуль, реализующий логику по работе с косинусным подобием."""
 
-from typing import TypeVar
+from typing import TypeVar, Generator
 
 import numpy as np
 
@@ -22,6 +22,9 @@ class CosineSimilarityProcessor:
     """
 
     source_data: InputData
+
+    symmetric: bool
+    default_value: float
 
     @classmethod
     def get_top_values(
@@ -51,27 +54,45 @@ class CosineSimilarityProcessor:
     def __init__(
         self,
         source_data: InputData,
+        *,
+        symmetric: bool = False,
+        default_value: float = -1,
     ):
         """Конструктор класса."""
         self.source_data = source_data
+        self.symmetric = symmetric
+        self.default_value = default_value
 
     def __call__(self) -> CalculatedSimilarity:
         """Подсчет косинусного подобия для набора данных."""
         members_count = self.source_data.shape[0]
 
         similarity_matrix_shape: tuple[int, int] = (members_count, members_count)
-        default_value: float = -1.  # -1 <= cos <= 1
+        similarity_matrix: CalculatedSimilarity = np.full(similarity_matrix_shape, self.default_value)
 
-        similarity_matrix: CalculatedSimilarity = np.full(similarity_matrix_shape, default_value)
-
-        indices_pairs = (
-            (core_index, slave_index)
-            for core_index in range(members_count)
-            for slave_index in range(core_index + 1, members_count)
-        )
+        indices_pairs = self._get_indices_pairs(members_count)
         for core_index, slave_index in indices_pairs:
             core_line, slave_line = self.source_data[core_index], self.source_data[slave_index]
             similarity_value = sum(core_line * slave_line) / (sum(core_line ** 2) ** 0.5 * sum(slave_line ** 2) ** 0.5)
             similarity_matrix[core_index, slave_index] = similarity_value
 
         return similarity_matrix
+
+    def _get_indices_pairs(self, count: int) -> Generator[ElementId, None, None]:
+        """Получение пар индексов перебора.
+
+        :param count: Количество элементов.
+        :return: Пары индексов.
+        """
+        if self.symmetric:
+            return (
+                (core_index, slave_index)
+                for core_index in range(count)
+                for slave_index in range(count)
+                if slave_index != core_index
+            )
+        return (
+            (core_index, slave_index)
+            for core_index in range(count)
+            for slave_index in range(core_index + 1, count)
+        )
