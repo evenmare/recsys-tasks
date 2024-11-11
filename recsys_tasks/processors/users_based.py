@@ -1,39 +1,16 @@
-from dataclasses import dataclass
 from functools import cached_property
-from typing import TypeVar, TypeAlias, NamedTuple
 
 import numpy as np
 
+from recsys_tasks.annotations.common import (
+    SourceMatrix,
+    UserId,
+    ProductId,
+    MatrixWithIndices,
+    UserRecommendation,
+    ProductInfo,
+)
 from recsys_tasks.processors.cosine_similarity import CosineSimilarityProcessor
-
-SourceMatrix = TypeVar('SourceMatrix', bound=np.ndarray[[int, int], float])
-
-UserId: TypeAlias = int
-ProductId: TypeAlias = int
-
-
-class MatrixWithIndices(NamedTuple):
-    """Описание матрицы."""
-
-    matrix: np.ndarray[[int, int], float]
-    columns: list[int]
-    index: list[int]
-
-
-@dataclass
-class ProductInfo:
-    """Описание продукта."""
-
-    product_id: ProductId
-    calculated_score: float
-
-
-@dataclass
-class UserRecommendation:
-    """Репрезентация пользовательских рекомендаций."""
-
-    recommended_products: list[ProductInfo]
-    not_recommended_products: list[ProductInfo] | None = None
 
 
 class UserBasedRecommendationsProcessor:
@@ -151,7 +128,6 @@ class UserBasedRecommendationsProcessor:
         )
         return different_users[~np.all(different_users == matrix_user_index, axis=1), :][:, 0].tolist()
 
-
     @cached_property
     def similar_users_similarity_matrix(self) -> MatrixWithIndices:
         """Построение матрицы подобия пользователей для похожих пользователей.
@@ -214,7 +190,7 @@ class UserBasedRecommendationsProcessor:
         if self.is_new_user:
             mean_products_score = np.nanmean(self.source_data, axis=1)
             top_product_index = np.argmax(mean_products_score)
-            return UserRecommendation(
+            return UserRecommendation[ProductInfo](
                 recommended_products=[
                     ProductInfo(
                         product_id=top_product_index,
@@ -265,7 +241,7 @@ class UserBasedRecommendationsProcessor:
                     )
                 )
 
-        return UserRecommendation(
+        return UserRecommendation[ProductInfo](
             recommended_products=recommended_products,
             not_recommended_products=not_recommended_products,
         )

@@ -73,7 +73,7 @@ class CosineSimilarityProcessor:
         indices_pairs = self._get_indices_pairs(members_count)
         for core_index, slave_index in indices_pairs:
             core_line, slave_line = self.source_data[core_index], self.source_data[slave_index]
-            similarity_value = sum(core_line * slave_line) / (sum(core_line ** 2) ** 0.5 * sum(slave_line ** 2) ** 0.5)
+            similarity_value = np.nansum(core_line * slave_line) / (np.nansum(core_line ** 2) ** 0.5 * np.nansum(slave_line ** 2) ** 0.5)
             similarity_matrix[core_index, slave_index] = similarity_value
 
         return similarity_matrix

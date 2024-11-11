@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "recsys_tasks"
-version = "0.0.1"
+version = "0.0.5"
 description = "Solutions modules for RecSys tasks"
 authors = ["Kirill Vershinin <kir9ver@gmail.com>"]
 readme = "README.md"
